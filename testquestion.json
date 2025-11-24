@@ -1,0 +1,131 @@
+[
+    {
+        "title": "What is the output of this recursion + stack behavior?",
+        "description": "```python\ndef solve(n):\n    if n == 0:\n        return 1\n    print(n)\n    return solve(n-1)\n\nsolve(3)\n```",
+        "options": [
+            "3 2 1",
+            "3 2 1 0",
+            "3 2 1 then error",
+            "3 2 then stops"
+        ],
+        "correctOption": 0,
+        "explanation": "```text\nCall stack:\nsolve(3)\n → solve(2)\n   → solve(1)\n     → solve(0)\nOnly prints before recursion → 3 2 1\n```",
+        "difficulty": "HARD",
+        "category": "Recursion Stack",
+        "tags": [
+            "Python",
+            "Recursion"
+        ],
+        "codeSnippet": "def solve(n): return solve(n-1)"
+    },
+    {
+        "title": "What is the result of this stack-based infix→postfix conversion?",
+        "description": "```python\nexpr = \"A+B*(C-D)/E\"  # Infix\nstack = []\noutput = []\n\nprecedence = {'+':1, '-':1, '*':2, '/':2}\n\nfor ch in expr:\n    if ch.isalpha():\n        output.append(ch)\n    elif ch in precedence:\n        while stack and precedence.get(stack[-1],0) >= precedence[ch]:\n            output.append(stack.pop())\n        stack.append(ch)\n    elif ch == '(':\n        stack.append(ch)\n    elif ch == ')':\n        while stack and stack[-1] != '(':\n            output.append(stack.pop())\n        stack.pop()\n\nwhile stack:\n    output.append(stack.pop())\n\nprint(''.join(output))\n```",
+        "options": [
+            "ABCD-*E/+",
+            "ABCD-*+E/",
+            "ABCD-*E/+",
+            "ABC-D*E/+"
+        ],
+        "correctOption": 2,
+        "explanation": "```text\nA + (B * (C - D)) / E\nPostfix → ABCD-*E/+\n```",
+        "difficulty": "HARD",
+        "category": "Expression Conversion",
+        "tags": [
+            "DSA",
+            "Stacks"
+        ],
+        "codeSnippet": "output.append(stack.pop())"
+    },
+    {
+        "title": "What does this stack simulation output?",
+        "description": "```javascript\nconst ops = [\"push 4\", \"push 7\", \"pop\", \"push 3\", \"push 9\", \"pop\", \"pop\"]; \nlet stack = [];\n\nfor (let op of ops) {\n  const [cmd, val] = op.split(\" \");\n  if (cmd === \"push\") stack.push(Number(val));\n  else stack.pop();\n}\n\nconsole.log(stack.length);\n```",
+        "options": [
+            "0",
+            "1",
+            "2",
+            "3"
+        ],
+        "correctOption": 1,
+        "explanation": "```text\npush 4 → [4]\npush 7 → [4,7]\npop → [4]\npush 3 → [4,3]\npush 9 → [4,3,9]\npop → [4,3]\npop → [4]\nStack length = 1\n```",
+        "difficulty": "HARD",
+        "category": "Stack Simulation",
+        "tags": [
+            "JavaScript"
+        ],
+        "codeSnippet": "stack.push(Number(val))"
+    },
+    {
+        "title": "What is printed by this mixed-type stack evaluation?",
+        "description": "```python\nstack = []\nstack.append(5)\nstack.append(\"5\")\nstack.append(5.0)\n\nwhile stack:\n    print(type(stack.pop()).__name__)\n```",
+        "options": [
+            "int, str, float",
+            "float, str, int",
+            "str, int, float",
+            "int, float, str"
+        ],
+        "correctOption": 1,
+        "explanation": "```text\nStack top → 5.0 → float\nNext → \"5\" → str\nLast → 5 → int\n```",
+        "difficulty": "MEDIUM",
+        "category": "Type Behavior",
+        "tags": [
+            "Python"
+        ],
+        "codeSnippet": "print(type(stack.pop()).__name__)"
+    },
+    {
+        "title": "What does this C stack memory code print?",
+        "description": "```c\n#include <stdio.h>\n\nvoid f(int x) {\n    int a = x + 2;\n    printf(\"%d \", a);\n    if (a < 10) f(a);\n}\n\nint main() {\n    f(1);\n    return 0;\n}\n```",
+        "options": [
+            "3 5 7 9",
+            "3 5 7 9 11",
+            "1 3 5 7 9",
+            "2 4 6 8 10"
+        ],
+        "correctOption": 0,
+        "explanation": "```text\nx=1 → a=3\nx=3 → a=5\nx=5 → a=7\nx=7 → a=9\n9 < 10 → last call\n```",
+        "difficulty": "HARD",
+        "category": "Call Stack",
+        "tags": [
+            "C",
+            "Recursion"
+        ],
+        "codeSnippet": "void f(int x) { int a = x + 2; }"
+    },
+    {
+        "title": "What output does this stack-based duplicate removal produce?",
+        "description": "```python\ns = \"abbaca\"\nstack = []\n\nfor ch in s:\n    if stack and stack[-1] == ch:\n        stack.pop()\n    else:\n        stack.append(ch)\n\nprint(\"\".join(stack))\n```",
+        "options": [
+            "abbaca",
+            "ca",
+            "baca",
+            "aa"
+        ],
+        "correctOption": 1,
+        "explanation": "```text\n\"abbaca\" → removing adjacent duplicates:\na → [a]\nb → [a,b]\nb → pop b → [a]\na → pop a → []\nc → [c]\na → [c,a]\nResult → \"ca\"\n```",
+        "difficulty": "HARD",
+        "category": "Stack Algorithms",
+        "tags": [
+            "Python"
+        ],
+        "codeSnippet": "if stack and stack[-1] == ch: stack.pop()"
+    },
+    {
+        "title": "Final stack state after tricky push-pop pattern?",
+        "description": "```javascript\nlet st = [];\nfor (let i = 1; i <= 5; i++) {\n  st.push(i);\n  if (i % 2 === 0) st.pop();\n}\nconsole.log(st.join(','));\n```",
+        "options": [
+            "1,3,5",
+            "1,2,3,4,5",
+            "1,3",
+            "5"
+        ],
+        "correctOption": 2,
+        "explanation": "```text\ni=1 → [1]\ni=2 → [1,2] → pop → [1]\ni=3 → [1,3]\ni=4 → [1,3,4] → pop → [1,3]\ni=5 → [1,3,5]\nFinal → \"1,3,5\"\n```",
+        "difficulty": "HARD",
+        "category": "Stack Simulation",
+        "tags": [
+            "JavaScript"
+        ],
+        "codeSnippet": "if (i % 2 === 0) st.pop();"
+    }
+]

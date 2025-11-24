@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      Role     @default(USER)
+  score     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  submissions Submission[]
+  likes       Like[]
+  comments    Comment[]
+}
+
+model Question {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  options     Json
+  correctOption Int
+  explanation String?
+  difficulty  Difficulty
+  category    String
+  tags        String[]
+  codeSnippet String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  submissions Submission[]
+  likes       Like[]
+  comments    Comment[]
+}
+
+model Submission {
+  id         String   @id @default(cuid())
+  userId     String
+  questionId String
+  isCorrect  Boolean
+  user       User     @relation(fields: [userId], references: [id])
+  question   Question @relation(fields: [questionId], references: [id])
+  createdAt  DateTime @default(now())
+}
+
+model Like {
+  id         String   @id @default(cuid())
+  userId     String
+  questionId String
+  user       User     @relation(fields: [userId], references: [id])
+  question   Question @relation(fields: [questionId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, questionId])
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  userId     String
+  questionId String
+  content    String
+  user       User     @relation(fields: [userId], references: [id])
+  question   Question @relation(fields: [questionId], references: [id])
+  createdAt  DateTime @default(now())
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
