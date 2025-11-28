@@ -16,27 +16,44 @@ model User {
   score     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  submissions Submission[]
-  likes       Like[]
-  comments    Comment[]
+
+  // Streak tracking
+  dailyStreakCount      Int       @default(0)
+  longestDailyStreak    Int       @default(0)
+  lastDailyActivityDate DateTime?
+  correctAnswerStreak   Int       @default(0)
+  longestCorrectStreak  Int       @default(0)
+  lastCorrectAnswerDate DateTime?
+
+  // Relations
+  submissions   Submission[]
+  likes         Like[]
+  comments      Comment[]
+  bookmarks     Bookmark[]
+  preferences   UserPreference?
+  reports       Report[]
+  notifications Notification[]
 }
 
 model Question {
-  id          String   @id @default(cuid())
-  title       String
-  description String
-  options     Json
+  id            String       @id @default(cuid())
+  title         String
+  description   String
+  options       Json
   correctOption Int
-  explanation String?
-  difficulty  Difficulty
-  category    String
-  tags        String[]
-  codeSnippet String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  submissions Submission[]
-  likes       Like[]
-  comments    Comment[]
+  explanation   String?
+  difficulty    Difficulty
+  category      String
+  tags          String[]
+  codeSnippet   String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  submissions   Submission[]
+  likes         Like[]
+  comments      Comment[]
+  bookmarks     Bookmark[]
+  topics        Topic[]
+  reports       Report[]
 }
 
 model Submission {
@@ -79,4 +96,82 @@ enum Difficulty {
   EASY
   MEDIUM
   HARD
+}
+
+model Bookmark {
+  id         String   @id @default(cuid())
+  userId     String
+  questionId String
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
+  question   Question @relation(fields: [questionId], references: [id])
+
+  @@unique([userId, questionId])
+  @@index([userId])
+  @@index([questionId])
+}
+
+model Topic {
+  id              String           @id @default(cuid())
+  name            String           @unique
+  slug            String           @unique
+  questions       Question[]
+  userPreferences UserPreference[] // Many-to-many: topics can be preferred by multiple users
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model UserPreference {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id])
+  theme           String   @default("system") // light, dark, system
+  language        String   @default("javascript") // default code language
+  preferredTopics Topic[] // Many-to-many: user can select multiple preferred topics
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Report {
+  id         String       @id @default(cuid())
+  userId     String
+  questionId String
+  reason     String
+  status     ReportStatus @default(PENDING)
+  user       User         @relation(fields: [userId], references: [id])
+  question   Question     @relation(fields: [questionId], references: [id])
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+  DISMISSED
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  actionUrl String?
+  user      User             @relation(fields: [userId], references: [id])
+  createdAt DateTime         @default(now())
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+}
+
+enum NotificationType {
+  LIKE
+  COMMENT
+  STREAK_MILESTONE
+  NEW_QUESTION
+  REPORT_UPDATE
+  ACHIEVEMENT
+  SYSTEM
 }
