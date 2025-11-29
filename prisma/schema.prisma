@@ -87,17 +87,6 @@ model Comment {
   createdAt  DateTime @default(now())
 }
 
-enum Role {
-  USER
-  ADMIN
-}
-
-enum Difficulty {
-  EASY
-  MEDIUM
-  HARD
-}
-
 model Bookmark {
   id         String   @id @default(cuid())
   userId     String
@@ -144,13 +133,6 @@ model Report {
   updatedAt  DateTime     @updatedAt
 }
 
-enum ReportStatus {
-  PENDING
-  REVIEWED
-  RESOLVED
-  DISMISSED
-}
-
 model Notification {
   id        String           @id @default(cuid())
   userId    String
@@ -174,4 +156,22 @@ enum NotificationType {
   REPORT_UPDATE
   ACHIEVEMENT
   SYSTEM
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+  DISMISSED
 }
