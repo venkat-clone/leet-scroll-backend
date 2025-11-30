@@ -5,7 +5,7 @@ import { authOptions } from "@/lib/auth";
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await getServerSession(authOptions);
 
@@ -15,7 +15,7 @@ export async function DELETE(
 
   try {
     await prisma.question.delete({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     return NextResponse.json({ message: "Question deleted successfully" });
@@ -29,7 +29,7 @@ export async function DELETE(
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await getServerSession(authOptions);
 
@@ -52,7 +52,7 @@ export async function PUT(
     } = body;
 
     const question = await prisma.question.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         title,
         description,
@@ -77,11 +77,11 @@ export async function PUT(
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const question = await prisma.question.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     if (!question) {
