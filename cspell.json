@@ -1,0 +1,19 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "ignorePaths": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "coverage/**",
+    "*.log",
+    "package-lock.json",
+    "package.json",
+    "yarn.lock",
+    "pnpm-lock.yaml",
+    "src/generated/**",
+    "public/**",
+    "prisma/**"
+  ],
+  "useGitignore": true
+}
