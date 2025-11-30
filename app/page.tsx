@@ -1,84 +1,89 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useRef, useCallback } from "react"
-import QuestionCard from "@/components/QuestionCard"
-import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect, useRef, useCallback } from "react";
+import QuestionCard from "@/components/QuestionCard";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 interface Question {
-  id: string
-  title: string
-  description: string
-  options: string[]
-  difficulty: string
-  category: string
-  tags: string[]
+  id: string;
+  title: string;
+  description: string;
+  options: string[];
+  difficulty: string;
+  category: string;
+  tags: string[];
 }
 
 export default function Home() {
-  const { status } = useSession()
-  const router = useRouter()
-  const [questions, setQuestions] = useState<Question[]>([])
-  const [page, setPage] = useState(1)
-  const [loading, setLoading] = useState(false)
-  const [hasMore, setHasMore] = useState(true)
-  const [filters, setFilters] = useState({ category: "", difficulty: "" })
-  const observer = useRef<IntersectionObserver | null>(null)
+  const { status } = useSession();
+  const router = useRouter();
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [filters, setFilters] = useState({ category: "", difficulty: "" });
+  const observer = useRef<IntersectionObserver | null>(null);
 
-  const lastQuestionRef = useCallback((node: HTMLDivElement) => {
-    if (loading) return
-    if (observer.current) observer.current.disconnect()
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        setPage(prevPage => prevPage + 1)
-      }
-    })
-    if (node) observer.current.observe(node)
-  }, [loading, hasMore])
+  const lastQuestionRef = useCallback(
+    (node: HTMLDivElement) => {
+      if (loading) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          setPage((prevPage) => prevPage + 1);
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [loading, hasMore],
+  );
 
   useEffect(() => {
-    setQuestions([])
-    setPage(1)
-    setHasMore(true)
-  }, [filters])
+    setQuestions([]);
+    setPage(1);
+    setHasMore(true);
+  }, [filters]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/login")
+      router.push("/login");
     }
-  }, [status, router])
+  }, [status, router]);
 
   useEffect(() => {
-    if (status !== "authenticated") return // Don't fetch if not authenticated
+    if (status !== "authenticated") return; // Don't fetch if not authenticated
 
     const fetchQuestions = async () => {
-      setLoading(true)
+      setLoading(true);
       try {
         const queryParams = new URLSearchParams({
           page: page.toString(),
           limit: "5",
           ...(filters.category && { category: filters.category }),
           ...(filters.difficulty && { difficulty: filters.difficulty }),
-        })
+        });
 
-        const res = await fetch(`/api/questions?${queryParams}`)
-        const data = await res.json()
+        const res = await fetch(`/api/questions?${queryParams}`);
+        const data = await res.json();
 
         if (data.questions.length === 0) {
-          setHasMore(false)
+          setHasMore(false);
         } else {
-          setQuestions(prev => page === 1 ? data.questions : [...prev, ...data.questions])
-          if (data.questions.length < 5) setHasMore(false)
+          setQuestions((prev) =>
+            page === 1 ? data.questions : [...prev, ...data.questions],
+          );
+          if (data.questions.length < 5) setHasMore(false);
         }
       } catch (error) {
-        console.error("Error fetching questions", error)
+        console.error("Error fetching questions", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchQuestions()
-  }, [page, filters])
+    fetchQuestions();
+  }, [page, filters]);
 
   return (
     <div className="h-[calc(100dvh-64px)] w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth">
@@ -98,7 +103,9 @@ export default function Home() {
         <div className="max-w-7xl mx-auto flex flex-row gap-3 justify-center overflow-x-auto no-scrollbar">
           <select
             value={filters.difficulty}
-            onChange={(e) => setFilters({ ...filters, difficulty: e.target.value })}
+            onChange={(e) =>
+              setFilters({ ...filters, difficulty: e.target.value })
+            }
             className="bg-[#111] border border-gray-700 text-gray-300 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 font-mono min-w-[140px]"
           >
             <option value="">All Difficulties</option>
@@ -109,7 +116,9 @@ export default function Home() {
 
           <select
             value={filters.category}
-            onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+            onChange={(e) =>
+              setFilters({ ...filters, category: e.target.value })
+            }
             className="bg-[#111] border border-gray-700 text-gray-300 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 font-mono min-w-[140px]"
           >
             <option value="">All Categories</option>
@@ -125,25 +134,36 @@ export default function Home() {
       <div className="">
         {questions.map((question, index) => {
           const handleNext = () => {
-            const nextIndex = index + 1
-            const nextElement = document.getElementById(`question-${nextIndex}`)
+            const nextIndex = index + 1;
+            const nextElement = document.getElementById(
+              `question-${nextIndex}`,
+            );
             if (nextElement) {
-              nextElement.scrollIntoView({ behavior: "smooth" })
+              nextElement.scrollIntoView({ behavior: "smooth" });
             }
-          }
+          };
 
           if (questions.length === index + 1) {
             return (
-              <div ref={lastQuestionRef} key={question.id} id={`question-${index}`} className="snap-start h-[calc(100dvh-64px)] w-full flex items-center justify-center p-4">
+              <div
+                ref={lastQuestionRef}
+                key={question.id}
+                id={`question-${index}`}
+                className="snap-start h-[calc(100dvh-64px)] w-full flex items-center justify-center p-4"
+              >
                 <QuestionCard question={question} onNext={handleNext} />
               </div>
-            )
+            );
           } else {
             return (
-              <div key={question.id} id={`question-${index}`} className="snap-start h-[calc(100dvh-64px)] w-full flex items-center justify-center p-4">
+              <div
+                key={question.id}
+                id={`question-${index}`}
+                className="snap-start h-[calc(100dvh-64px)] w-full flex items-center justify-center p-4"
+              >
                 <QuestionCard question={question} onNext={handleNext} />
               </div>
-            )
+            );
           }
         })}
       </div>
@@ -156,18 +176,20 @@ export default function Home() {
 
       {!hasMore && questions.length > 0 && (
         <div className="snap-start h-[calc(100dvh-64px)] w-full flex items-center justify-center text-gray-500">
-          You've reached the end! Check back later.
+          You&apos;ve reached the end! Check back later.
         </div>
       )}
 
       {!loading && questions.length === 0 && (
         <div className="h-full flex items-center justify-center">
           <div className="text-center">
-            <h3 className="text-lg font-medium text-gray-900">No questions found</h3>
+            <h3 className="text-lg font-medium text-gray-900">
+              No questions found
+            </h3>
             <p className="text-gray-500 mt-2">Try adjusting your filters.</p>
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }
