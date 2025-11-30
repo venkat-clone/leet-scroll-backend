@@ -12,7 +12,15 @@ const customJestConfig = {
     moduleNameMapper: {
         // Handle module aliases (this will be automatically configured for you soon)
         '^@/(.*)$': '<rootDir>/$1',
+        
+        
     },
+    collectCoverageFrom: [
+        'app/**/*.{ts}',
+        '!lib/**/*.{ts,tsx}',
+        '!components/**/*.{ts,tsx}',
+        '!**/*.d.ts',
+    ],
     coverageThreshold: {
         global: {
             branches: 90,
