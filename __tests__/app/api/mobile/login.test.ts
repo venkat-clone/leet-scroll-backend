@@ -69,7 +69,7 @@ describe("POST /api/mobile/login", () => {
     });
 
     (prisma.user.findUnique as jest.Mock).mockRejectedValue(
-      new Error("DB Error")
+      new Error("DB Error"),
     );
 
     const res = await POST(req);

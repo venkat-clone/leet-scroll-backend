@@ -120,7 +120,7 @@ describe("GET /api/mobile/profile", () => {
       },
     });
     (prisma.user.findUnique as jest.Mock).mockRejectedValueOnce(
-      new Error("DB Error")
+      new Error("DB Error"),
     );
     (prisma.submission.count as jest.Mock).mockResolvedValueOnce(0);
     (prisma.submission.groupBy as jest.Mock).mockResolvedValueOnce([]);

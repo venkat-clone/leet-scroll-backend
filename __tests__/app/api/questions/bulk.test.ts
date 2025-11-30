@@ -91,7 +91,7 @@ describe("POST /api/questions/bulk", () => {
     });
     initMockAdminRole();
     (prisma.question.createMany as jest.Mock).mockRejectedValue(
-      new Error("DB Error")
+      new Error("DB Error"),
     );
     const res = await POST(req);
     expect(res.status).toBe(500);
