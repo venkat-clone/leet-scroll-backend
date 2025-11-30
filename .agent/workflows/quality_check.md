@@ -3,31 +3,36 @@ description: Run quality checks including security, coverage, tests, linting, fo
 ---
 
 1. Check for security vulnerabilities
-// turbo
+   // turbo
+
 ```bash
 npm audit
 ```
 
 2. Run tests with code coverage
-// turbo
+   // turbo
+
 ```bash
 npm test -- --coverage
 ```
 
 3. Run linting
-// turbo
+   // turbo
+
 ```bash
 npm run lint
 ```
 
 4. Check formatting
-// turbo
+   // turbo
+
 ```bash
 npx prettier --check .
 ```
 
 5. Check spelling
-// turbo
+   // turbo
+
 ```bash
 npx cspell lint "**" --gitignore
 ```

@@ -4,7 +4,10 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Providers from "@/components/Providers";
 
-const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+});
 
 export const metadata: Metadata = {
   title: "LeetScroll",
@@ -18,7 +21,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${jetbrainsMono.variable} font-mono bg-background text-foreground antialiased`}>
+      <body
+        className={`${jetbrainsMono.variable} font-mono bg-background text-foreground antialiased`}
+      >
         <Providers>
           <Navbar />
           {children}
