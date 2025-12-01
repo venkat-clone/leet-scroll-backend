@@ -4,7 +4,11 @@ import * as admin from "firebase-admin";
 
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.applicationDefault(),
+    credential: admin.credential.cert({
+      projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+      clientEmail: process.env.GOOGLE_CLOUD_CLIENT_EMAIL,
+      privateKey: process.env.GOOGLE_CLOUD_PRIVATE_KEY,
+    }),
   });
 }
 
