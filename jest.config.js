@@ -13,11 +13,14 @@ const customJestConfig = {
     // Handle module aliases (this will be automatically configured for you soon)
     "^@/(.*)$": "<rootDir>/$1",
   },
+  collectCoverage: true,
   collectCoverageFrom: [
-    "app/**/*.{ts}",
+    "app/**/*.ts",
+    "app/api/**/*.ts",
     "!lib/**/*.{ts,tsx}",
     "!components/**/*.{ts,tsx}",
     "!**/*.d.ts",
+    "!app/api/auth/**/*.ts",
   ],
   coverageThreshold: {
     global: {
