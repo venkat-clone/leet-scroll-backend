@@ -2,7 +2,7 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
+import { firebaseAdmin } from "@/lib/firebase-admin";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -14,41 +14,54 @@ export const authOptions: NextAuthOptions = {
   },
   providers: [
     CredentialsProvider({
-      name: "credentials",
+      name: "Firebase",
       credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
+        idToken: { label: "ID Token", type: "text" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        if (!credentials?.idToken) {
           return null;
         }
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email,
-          },
-        });
+        try {
+          const decodedToken = await firebaseAdmin
+            .auth()
+            .verifyIdToken(credentials.idToken);
 
-        if (!user) {
+          const { email, name, picture, uid } = decodedToken;
+
+          if (!email) {
+            return null;
+          }
+
+          // Upsert user in the database
+          const user = await prisma.user.upsert({
+            where: { email },
+            update: {
+              name: name || undefined,
+              image: picture || undefined,
+              emailVerified: new Date(),
+            },
+            create: {
+              email,
+              name: name || undefined,
+              image: picture || undefined,
+              emailVerified: new Date(),
+              password: "", // No password for OAuth users
+            },
+          });
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            image: user.image,
+          };
+        } catch (error) {
+          console.error("Firebase token verification failed:", error);
           return null;
         }
-
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password,
-        );
-
-        if (!isPasswordValid) {
-          return null;
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-        };
       },
     }),
   ],

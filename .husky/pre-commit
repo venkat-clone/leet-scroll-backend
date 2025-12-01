@@ -1,1 +1,7 @@
-npm test
+
+npx eslint --fix 
+npm run lint
+npx prettier --write .
+npx prettier --check . 
+npx cspell lint "**" --gitignore 
+npm test -- --coverage
