@@ -4,4 +4,4 @@ npm run lint
 npx prettier --write .
 npx prettier --check . 
 npx cspell lint "**" --gitignore 
-npm test -- --coverage --maxWorkers=25%  --max-old-space-size=4096
+npm test -- --coverage --maxWorkers=25%  --max-old-space-size=2048
