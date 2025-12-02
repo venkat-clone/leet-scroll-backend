@@ -52,17 +52,19 @@ jobs:
 
       - name: build app
         env:
-          NEXT_PUBLIC_FIREBASE_API_KEY: "demo"
-          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: "demo"
-          NEXT_PUBLIC_FIREBASE_PROJECT_ID: "demo"
-          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: "demo"
-          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "demo"
-          NEXT_PUBLIC_FIREBASE_APP_ID: "demo"
-          GOOGLE_APPLICATION_CREDENTIALS: "demo"
-          GOOGLE_CLOUD_PROJECT_ID: "demo"
-          GOOGLE_CLOUD_CLIENT_EMAIL: "demo"
-          GOOGLE_CLOUD_PRIVATE_KEY: "demo"
-        run: npm run build
+          NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
+          NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          GOOGLE_CLOUD_PROJECT_ID: ${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}
+          GOOGLE_CLOUD_CLIENT_EMAIL: ${{ secrets.GOOGLE_CLOUD_CLIENT_EMAIL }}
+          GOOGLE_CLOUD_PRIVATE_KEY: ${{ secrets.GOOGLE_CLOUD_PRIVATE_KEY }}
+        run: |
+          echo "${{ secrets.GOOGLE_CLOUD_PRIVATE_KEY }}"
+          npm run build
 
       - name: Check Spelling
         run: npx cspell lint "**" --gitignore
