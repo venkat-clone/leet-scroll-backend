@@ -18,35 +18,12 @@ env:
   GOOGLE_CLOUD_CLIENT_EMAIL: ${{ secrets.GOOGLE_CLOUD_CLIENT_EMAIL }}
   GOOGLE_CLOUD_PRIVATE_KEY: ${{ secrets.GOOGLE_CLOUD_PRIVATE_KEY }}
   DATABASE_URL: ${{ vars.DATABASE_URL }}
-  DATABASE_URL_Ex: "demo123"
 
 jobs:
-  quality-check:
+  security:
+    name: Security Check
     runs-on: ubuntu-latest
-    environment: preview
-    env:
-      NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
-      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
-      NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
-      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
-      NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
-      NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
-      GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
-      GOOGLE_CLOUD_PROJECT_ID: ${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}
-      GOOGLE_CLOUD_CLIENT_EMAIL: ${{ secrets.GOOGLE_CLOUD_CLIENT_EMAIL }}
-      GOOGLE_CLOUD_PRIVATE_KEY: ${{ secrets.GOOGLE_CLOUD_PRIVATE_KEY }}
-      DATABASE_URL: ${{ vars.DATABASE_URL }}
-      DATABASE_URL_Ex: "demo123"
     steps:
-      - name: Debug environment
-        run: |
-          echo "GITHUB_REPOSITORY=$GITHUB_REPOSITORY"
-          echo "GITHUB_SHA=$GITHUB_SHA"
-          echo "GITHUB_REF=$GITHUB_REF"
-          echo "RUNNER_OS=$RUNNER_OS"
-          echo "List all env vars (secrets will be masked with ***):"
-          env | sort
-
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -59,41 +36,33 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # - name: Security Check
-      #   run: npm audit
-      #   continue-on-error: true
+      - name: Security Check
+        run: npm audit
+        continue-on-error: true
 
-      # - name: Run Tests & Coverage
-      #   env:
-      #     NEXT_PUBLIC_FIREBASE_API_KEY: "demo"
-      #     NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: "demo"
-      #     NEXT_PUBLIC_FIREBASE_PROJECT_ID: "demo"
-      #     NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: "demo"
-      #     NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "demo"
-      #     NEXT_PUBLIC_FIREBASE_APP_ID: "demo"
-      #     GOOGLE_APPLICATION_CREDENTIALS: "demo"
-      #     GOOGLE_CLOUD_PROJECT_ID: "demo"
-      #     GOOGLE_CLOUD_CLIENT_EMAIL: "demo"
-      #     GOOGLE_CLOUD_PRIVATE_KEY: "demo"
-      #   run: npm test -- --coverage --maxWorkers=50%  --max-old-space-size=4096
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required for commit linting if needed, though semantic-pull-request uses API usually
 
-      # - name: Run Linting
-      #   run: npm run lint
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
 
-      # - name: Check Formatting
-      #   run: npx prettier --check .
+      - name: Install dependencies
+        run: npm ci
 
-      - name: prisma generate
-        run: npx prisma generate
+      - name: Run Linting
+        run: npm run lint
 
-      - name: build app
-        run: |
-          echo "dburl:${{ secrets.DATABASE_URL }}"
-          echo "dburl:${{ vars.DATABASE_URL }}"
-          echo "dburl:${{ vars.DATABASE_URL }}"
-          echo "$DATABASE_URL"
-          echo "$DATABASE_URL_Ex"
-          npm run build
+      - name: Check Formatting
+        run: npx prettier --check .
 
       - name: Check Spelling
         run: npx cspell lint "**" --gitignore
@@ -103,3 +72,46 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: github.event_name == 'pull_request'
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    environment: preview
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Tests & Coverage
+        run: npm test -- --coverage --maxWorkers=50%  --max-old-space-size=4096
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    environment: preview
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: prisma generate
+        run: npx prisma generate
+
+      - name: build app
+        run: npm run build
