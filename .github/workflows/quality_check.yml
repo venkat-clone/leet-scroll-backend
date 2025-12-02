@@ -63,7 +63,10 @@ jobs:
           GOOGLE_CLOUD_CLIENT_EMAIL: ${{ secrets.GOOGLE_CLOUD_CLIENT_EMAIL }}
           GOOGLE_CLOUD_PRIVATE_KEY: ${{ secrets.GOOGLE_CLOUD_PRIVATE_KEY }}
         run: |
-          echo "${{ secrets.GOOGLE_CLOUD_PRIVATE_KEY }}"
+          echo "${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}"
+          echo "${{ vars.GOOGLE_CLOUD_CLIENT_EMAIL }}"
+          echo "${{ vars.GOOGLE_CLOUD_PROJECT_ID }}"
+          echo "$GOOGLE_CLOUD_PROJECT_ID"
           npm run build
 
       - name: Check Spelling
