@@ -1,5 +1,4 @@
 name: Quality Checks
-
 on:
   push:
     branches: ["main"]
@@ -49,13 +48,11 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "npm"
-
       - name: Install dependencies
         run: npm ci
 
@@ -85,7 +82,6 @@ jobs:
 
       - name: prisma generate
         run: npx prisma generate
-
       - name: build app
         run: |
           echo "dburl:${{ secrets.DATABASE_URL }}"
