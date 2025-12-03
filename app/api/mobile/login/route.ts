@@ -12,12 +12,13 @@ export async function POST(req: Request) {
       // Firebase Auth Flow
       try {
         const decodedToken = await firebaseAdmin.auth().verifyIdToken(idToken);
+        console.log("Decoded token:", decodedToken);
         const { email: tokenEmail, name, picture } = decodedToken;
 
         if (!tokenEmail) {
           return NextResponse.json(
             { error: "Invalid token: email not found" },
-            { status: 400 },
+            { status: 400 }
           );
         }
 
@@ -37,7 +38,6 @@ export async function POST(req: Request) {
             password: "", // No password for OAuth users
           },
         });
-
         return NextResponse.json({
           user: {
             id: user.id,
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
         console.error("Firebase token verification failed:", error);
         return NextResponse.json(
           { error: "Invalid ID token" },
-          { status: 401 },
+          { status: 401 }
         );
       }
     }
@@ -73,19 +73,19 @@ export async function POST(req: Request) {
     if (!user) {
       return NextResponse.json(
         { error: "Invalid credentials" },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
     const isPasswordValid = await bcrypt.compare(
       password,
-      user.password || "", // Handle optional password
+      user.password || "" // Handle optional password
     );
 
     if (!isPasswordValid) {
       return NextResponse.json(
         { error: "Invalid credentials" },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -105,7 +105,7 @@ export async function POST(req: Request) {
     console.error("Mobile login error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
