@@ -12,6 +12,7 @@ export async function POST(req: Request) {
       // Firebase Auth Flow
       try {
         const decodedToken = await firebaseAdmin.auth().verifyIdToken(idToken);
+        console.log("Decoded token:", decodedToken);
         const { email: tokenEmail, name, picture } = decodedToken;
 
         if (!tokenEmail) {
@@ -37,7 +38,6 @@ export async function POST(req: Request) {
             password: "", // No password for OAuth users
           },
         });
-
         return NextResponse.json({
           user: {
             id: user.id,
