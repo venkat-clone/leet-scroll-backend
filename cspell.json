@@ -15,5 +15,6 @@
     "public/**",
     "prisma/**"
   ],
-  "useGitignore": true
+  "useGitignore": true,
+  "ignoreWords": ["NEXTAUTH"]
 }

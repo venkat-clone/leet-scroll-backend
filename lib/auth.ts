@@ -1,8 +1,10 @@
-import { NextAuthOptions } from "next-auth";
+import { Awaitable, NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import { firebaseAdmin } from "@/lib/firebase-admin";
+import { JWT, JWTDecodeParams, JWTEncodeParams } from "next-auth/jwt";
+import { verify, sign } from "jsonwebtoken";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -10,7 +12,7 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   pages: {
-    signIn: "/login",
+    signIn: "/api/mobile/login",
   },
   providers: [
     CredentialsProvider({
@@ -65,6 +67,36 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
+  jwt: {
+    secret: process.env.NEXTAUTH_SECRET,
+    encode: async ({ token, secret }: JWTEncodeParams): Promise<string> => {
+      const encodedToken = sign(
+        {
+          id: token?.id,
+          role: token?.role,
+          email: token?.email,
+          name: token?.name,
+          image: token?.image,
+        },
+        secret,
+      );
+      return encodedToken;
+    },
+    decode: async ({ token, secret }: JWTDecodeParams): Promise<JWT | null> => {
+      if (!token) return null;
+      const decodedToken = verify(token, secret);
+      if (typeof decodedToken === "object") {
+        return {
+          id: decodedToken.id,
+          role: decodedToken.role,
+          email: decodedToken.email,
+          name: decodedToken.name,
+          image: decodedToken.image,
+        };
+      }
+      return null;
+    },
+  },
   callbacks: {
     async session({ session, token }) {
       if (token && session.user) {
