@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { firebaseAdmin } from "@/lib/firebase-admin";
+import { sign, verify } from "jsonwebtoken";
 
 export async function POST(req: Request) {
   try {
@@ -38,6 +39,15 @@ export async function POST(req: Request) {
             password: "", // No password for OAuth users
           },
         });
+        const apiToken = sign(
+          {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+          },
+          process.env.NEXTAUTH_SECRET!,
+          { expiresIn: "7d" },
+        );
         return NextResponse.json({
           user: {
             id: user.id,
@@ -50,7 +60,7 @@ export async function POST(req: Request) {
           // In a real app, you might issue a session token here (JWT)
           // For now, we return the user info, assuming the mobile app uses the ID token
           // or we can return a custom token if needed.
-          token: idToken, // Echoing back or issuing a new one
+          token: apiToken, // Echoing back or issuing a new one
         });
       } catch (error) {
         console.error("Firebase token verification failed:", error);
@@ -88,7 +98,15 @@ export async function POST(req: Request) {
         { status: 401 },
       );
     }
-
+    const apiToken = sign(
+      {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      },
+      process.env.NEXTAUTH_SECRET!,
+      { expiresIn: "7d" },
+    );
     // In a real app, we would issue a JWT here.
     // For this demo, we'll return the user info and a mock token.
     return NextResponse.json({
@@ -99,7 +117,7 @@ export async function POST(req: Request) {
         role: user.role,
         score: user.score,
       },
-      token: "mock-jwt-token-" + user.id,
+      token: apiToken,
     });
   } catch (error) {
     console.error("Mobile login error:", error);
