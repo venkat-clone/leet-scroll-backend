@@ -13,6 +13,7 @@ export async function POST(req: Request) {
       // Firebase Auth Flow
       try {
         const decodedToken = await firebaseAdmin.auth().verifyIdToken(idToken);
+        console.log("Decoded token:", decodedToken);
         const { email: tokenEmail, name, picture } = decodedToken;
 
         if (!tokenEmail) {
@@ -48,8 +49,18 @@ export async function POST(req: Request) {
           { expiresIn: "7d" },
         );
         return NextResponse.json({
-          user,
-          token: apiToken,
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            score: user.score,
+            image: user.image,
+          },
+          // In a real app, you might issue a session token here (JWT)
+          // For now, we return the user info, assuming the mobile app uses the ID token
+          // or we can return a custom token if needed.
+          token: apiToken, // Echoing back or issuing a new one
         });
       } catch (error) {
         console.error("Firebase token verification failed:", error);
@@ -108,8 +119,7 @@ export async function POST(req: Request) {
       },
       token: apiToken,
     });
-  } catch (error) {
-    console.error("Mobile login error:", error);
+  } catch {
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

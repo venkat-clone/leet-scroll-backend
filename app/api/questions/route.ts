@@ -61,9 +61,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  try {
-    const body = await req.json();
-    const {
+  const body = await req.json();
+  const {
+    title,
+    description,
+    options,
+    correctOption,
+    explanation,
+    difficulty,
+    category,
+    tags,
+    codeSnippet,
+  } = body;
+
+  const question = await prisma.question.create({
+    data: {
       title,
       description,
       options,
@@ -73,27 +85,8 @@ export async function POST(req: Request) {
       category,
       tags,
       codeSnippet,
-    } = body;
+    },
+  });
 
-    const question = await prisma.question.create({
-      data: {
-        title,
-        description,
-        options,
-        correctOption,
-        explanation,
-        difficulty,
-        category,
-        tags,
-        codeSnippet,
-      },
-    });
-
-    return NextResponse.json(question, { status: 201 });
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to create question" },
-      { status: 500 },
-    );
-  }
+  return NextResponse.json(question, { status: 201 });
 }
