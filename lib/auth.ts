@@ -1,4 +1,4 @@
-import { Awaitable, NextAuthOptions } from "next-auth";
+import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
@@ -12,7 +12,7 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   pages: {
-    signIn: "/api/mobile/login",
+    signIn: "/login",
   },
   providers: [
     CredentialsProvider({
@@ -24,13 +24,14 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.idToken) {
           return null;
         }
+        console.log("Credentials", credentials);
 
         try {
           const decodedToken = await firebaseAdmin
             .auth()
             .verifyIdToken(credentials.idToken);
 
-          const { email, name, picture, uid } = decodedToken;
+          const { email, name, picture } = decodedToken;
 
           if (!email) {
             return null;

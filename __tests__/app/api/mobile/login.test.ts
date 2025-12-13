@@ -2,8 +2,10 @@ import { POST } from "@/app/api/mobile/login/route";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { firebaseAdmin } from "@/lib/firebase-admin";
+import { sign } from "jsonwebtoken";
 
 jest.mock("@/lib/prisma");
+jest.mock("jsonwebtoken");
 jest.mock("@/lib/firebase-admin", () => ({
   firebaseAdmin: {
     auth: jest.fn().mockReturnValue({
@@ -39,6 +41,7 @@ describe("POST /api/mobile/login", () => {
     };
 
     (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
+    (sign as jest.Mock).mockReturnValue("mock-jwt-token-1");
 
     const res = await POST(req);
     const data = await res.json();
@@ -151,6 +154,8 @@ describe("POST /api/mobile/login", () => {
     (firebaseAdmin.auth().verifyIdToken as jest.Mock).mockResolvedValue(
       mockDecodedToken,
     );
+    (sign as jest.Mock).mockReturnValue("mock-jwt-token-1");
+    (prisma.user.upsert as jest.Mock).mockResolvedValue(mockUser);
     (prisma.user.upsert as jest.Mock).mockResolvedValue(mockUser);
 
     const res = await POST(req);
@@ -158,7 +163,7 @@ describe("POST /api/mobile/login", () => {
 
     expect(res.status).toBe(200);
     expect(data.user.email).toBe("firebase@example.com");
-    expect(data.token).toBe("valid-token");
+    expect(data.token).toBe("mock-jwt-token-1");
   });
 
   it("should return 400 if token has no email", async () => {

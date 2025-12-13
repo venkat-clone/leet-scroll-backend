@@ -4,12 +4,15 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
+  console.log("Session", session);
 
   // Allow mobile auth via header for this specific endpoint
   const mobileUserId = req.headers.get("x-user-id");
   const userId = session?.user?.id || mobileUserId;
 
   if (!userId) {
+    console.log("User not found", userId);
+
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

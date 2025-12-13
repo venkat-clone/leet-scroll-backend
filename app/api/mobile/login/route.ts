@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { firebaseAdmin } from "@/lib/firebase-admin";
-import { sign, verify } from "jsonwebtoken";
+import { sign } from "jsonwebtoken";
 
 export async function POST(req: Request) {
   try {
@@ -119,8 +119,7 @@ export async function POST(req: Request) {
       },
       token: apiToken,
     });
-  } catch (error) {
-    console.error("Mobile login error:", error);
+  } catch {
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
