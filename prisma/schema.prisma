@@ -18,6 +18,7 @@ model User {
   score         Int          @default(0)
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+  views         View[]
   accounts      Account[]
   sessions      Session[]
   submissions   Submission[]
@@ -73,6 +74,7 @@ model Question {
   codeSnippet   String?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+  views         View[]
   submissions   Submission[]
   likes         Like[]
   comments      Comment[]
@@ -97,6 +99,15 @@ model Like {
   createdAt  DateTime @default(now())
 
   @@unique([userId, questionId])
+}
+
+model View {
+  id         String   @id @default(cuid()) 
+  userId     String
+  questionId String
+  user       User     @relation(fields: [userId], references: [id])
+  question   Question @relation(fields: [questionId], references: [id])
+  createdAt  DateTime @default(now())
 }
 
 model Comment {
