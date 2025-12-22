@@ -19,21 +19,11 @@ export async function GET(req: Request) {
   if (category) where.category = category;
   if (difficulty) where.difficulty = difficulty;
 
-  // fetch attempted correct questions
-  const attemptedCorrect = await prisma.submission.findMany({
-    where: {
-      userId: session.user.id,
-      isCorrect: true,
-    },
-    select: { questionId: true },
-  });
-  const excludeIds = attemptedCorrect.map((s) => s.questionId);
-
   // fetch random questions excluding them
   const questions = await prisma.question.findMany({
     where: {
       ...where,
-      id: { notIn: excludeIds },
+      // id: { notIn: excludeIds },
     },
     take: limit,
     // orderBy: [{ options:{random: "asc"} }],

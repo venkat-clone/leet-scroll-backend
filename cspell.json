@@ -13,8 +13,9 @@
     "pnpm-lock.yaml",
     "src/generated/**",
     "public/**",
-    "prisma/**"
+    "prisma/**",
+    "scripts/seed-test-data.ts"
   ],
   "useGitignore": true,
-  "ignoreWords": ["NEXTAUTH"]
+  "ignoreWords": ["NEXTAUTH", "Prefs", "pgsql"]
 }
