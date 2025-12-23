@@ -177,12 +177,7 @@ async function seedQuestions() {
       id: `test-question-${i}`,
       title: `Test Question ${i}`,
       description: `This is a test question ${i} for performance testing. It includes various tags and metadata.`,
-      options: {
-        A: "Option A",
-        B: "Option B",
-        C: "Option C",
-        D: "Option D",
-      },
+      options: ["Option A", "Option B", "Option C", "Option D"],
       correctOption: randomInt(0, 3),
       explanation: `Explanation for test question ${i}`,
       difficulty,

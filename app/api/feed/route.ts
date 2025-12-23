@@ -28,6 +28,7 @@ interface FeedQuestion {
   priority: number;
   userRanking: number;
   interestedTagsCount: number;
+  correctOption: number;
 }
 
 // Load the feed query once at module level
@@ -93,14 +94,21 @@ export async function GET(request: Request) {
         sevenDaysAgo,
       );
       cursorId = lastSubmission.question.id;
-    } else {
+    } else if (!userPreferences) {
+      // create user preferences
+      await prisma.userPreferences.create({
+        data: {
+          userId,
+          interestedTopics: [],
+          preferredTopics: [],
+          preferredDifficulties: [],
+        },
+      });
+
       cursorRanking = 0;
       cursorId = null;
     }
   }
-
-  console.log("cursorRanking", cursorRanking);
-  console.log("cursorId", cursorId);
 
   try {
     const feedQuery = getFeedQuery();
@@ -114,6 +122,8 @@ export async function GET(request: Request) {
       cursorId, // $4: cursor id (null for first page)
       limit + 1, // $5: limit (+1 to check if there's more)
     );
+
+    console.log("questions", questions.length);
 
     // Pagination
     const hasMore = questions.length > limit;
@@ -132,6 +142,7 @@ export async function GET(request: Request) {
         title: q.title,
         description: q.description,
         options: q.options,
+        correctOption: q.correctOption,
         difficulty: q.difficulty,
         category: q.category,
         tags: q.tags,

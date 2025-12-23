@@ -17,5 +17,15 @@
     "scripts/seed-test-data.ts"
   ],
   "useGitignore": true,
-  "ignoreWords": ["NEXTAUTH", "Prefs", "pgsql"]
+  "ignoreWords": [
+    "NEXTAUTH",
+    "Prefs",
+    "pgsql",
+    "datamodel",
+    "dmmf",
+    "prismock",
+    "Inorder",
+    "scoll",
+    "leetscroll"
+  ]
 }

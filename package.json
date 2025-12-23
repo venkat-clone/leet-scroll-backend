@@ -56,6 +56,8 @@
     "jest-mock-extended": "^4.0.0",
     "jiti": "^2.6.1",
     "node-mocks-http": "^1.17.2",
+    "prisma-mock": "^1.0.2",
+    "prismock": "^1.35.4",
     "tailwindcss": "^4",
     "ts-jest": "^29.4.5",
     "tsx": "^4.21.0",

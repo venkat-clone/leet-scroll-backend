@@ -7,11 +7,12 @@ const TEN_MINUTES_MS = 10 * 60 * 1000;
 
 export async function GET(
   req: Request,
-  { params }: { params: Promise<{ questionId: string }> },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await getServerSession(authOptions);
-  const { questionId } = await params;
+  const { id } = await params;
   const userId = session?.user?.id;
+  const questionId = id;
 
   try {
     // Fetch question with social metadata counts
@@ -125,6 +126,8 @@ export async function GET(
 
       // Show explanation if user has answered correctly
       shouldShowExplanation = submission!.correctAttempts > 0;
+    } else {
+      console.log("no submission");
     }
 
     // Build response
@@ -137,12 +140,11 @@ export async function GET(
       category: question.category,
       tags: question.tags,
       codeSnippet: question.codeSnippet,
-      metadata: {
-        views: question._count.views,
-        likes: question._count.likes,
-        comments: question._count.comments,
-        userLiked,
-      },
+      userLiked,
+      isBookmarked: false,
+      likes: question._count.likes,
+      views: question._count.views,
+      comments: question._count.comments,
     };
 
     // Only include explanation if user has earned it

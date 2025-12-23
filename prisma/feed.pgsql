@@ -15,6 +15,7 @@ ranked_questions AS (
     q.difficulty,
     q.category,
     q.tags,
+    q."correctOption",
     q."codeSnippet",
     
     COALESCE(s.attempts, 0) AS "userAttempts",
@@ -43,11 +44,11 @@ ranked_questions AS (
 
     -- Priority for spaced repetition
     CASE
-      WHEN s.id IS NULL THEN 0
-      WHEN s.attempts > 2 AND s."correctAttempts" = 0 THEN 1
+      WHEN s.id IS NULL THEN 4
+      WHEN s.attempts > 2 AND s."correctAttempts" = 0 THEN 3
       WHEN s."isCorrect" = true AND s."last_shown_at" < $2 THEN 2
-      WHEN s."last_shown_at" < $2 THEN 3
-      ELSE 4
+      WHEN s."last_shown_at" < $2 THEN 1
+      ELSE 0
     END AS priority,
 
     -- Final ranking score
@@ -64,12 +65,12 @@ ranked_questions AS (
       ), 0) * 2
       + (q.difficulty = ANY(p.difficulties))::int * 2
       + CASE
-          WHEN s.id IS NULL THEN 0
-          WHEN s.attempts > 2 AND s."correctAttempts" = 0 THEN 1
+          WHEN s.id IS NULL THEN 4
+          WHEN s.attempts > 2 AND s."correctAttempts" = 0 THEN 3
           WHEN s."isCorrect" = true AND s."last_shown_at" < $2 THEN 2
-          WHEN s."last_shown_at" < $2 THEN 3
-          ELSE 4
-        END * 2
+          WHEN s."last_shown_at" < $2 THEN 1
+          ELSE 0
+        END 
     ) AS "userRanking"
 
   FROM "Question" q
@@ -82,13 +83,9 @@ ranked_questions AS (
 -- Outer query: apply cursor pagination using the computed userRanking
 SELECT *
 FROM ranked_questions
-WHERE 
-($3::numeric IS NULL OR $4::text IS NULL)  -- first page: both null
-  OR 
-  "userRanking" < $3::numeric
-  OR 
-  ("userRanking" = $3::numeric AND id > $4::text)
+
 ORDER BY 
   "userRanking" DESC,
+  "userLastShownAt" ASC,
   id ASC
-LIMIT $5;  -- limit (e.g. 10)
+LIMIT $5 ;  -- limit (e.g. 10)
