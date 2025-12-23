@@ -8,21 +8,39 @@ datasource db {
 }
 
 model User {
-  id            String       @id @default(cuid())
+  id            String           @id @default(cuid())
   name          String?
-  email         String?      @unique
+  email         String?          @unique
   emailVerified DateTime?
   image         String?
   password      String?
-  role          Role         @default(USER)
-  score         Int          @default(0)
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  role          Role             @default(USER)
+  score         Int              @default(0)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  attempts      UserAttempt[]
+  views         View[]
   accounts      Account[]
   sessions      Session[]
   submissions   Submission[]
   likes         Like[]
   comments      Comment[]
+  preferences   UserPreferences?
+}
+
+model UserPreferences {
+  id                    String       @id @default(cuid())
+  userId                String       @map("user_id")
+  preferredDifficulties Difficulty[] @default([]) // e.g., [Easy, Medium]
+  // explicitly mentiond by the usere 
+  preferredTopics       String[]     @default([]) // e.g., ["array", "dynamic-programming"]
+  // auto generated every time user solves a question
+  interestedTopics      String[]     @default([]) // e.g., ["array", "dynamic-programming"]
+  feedSize              Int          @default(10) // questions per scroll load
+  preferredLanguages    String[]     @default([]) // e.g., ["javascript", "python"]
+  user                  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId])
 }
 
 model Account {
@@ -73,19 +91,46 @@ model Question {
   codeSnippet   String?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+  views         View[]
   submissions   Submission[]
   likes         Like[]
   comments      Comment[]
+
+  @@index([tags])
+  @@index([difficulty])
 }
 
 model Submission {
-  id         String   @id @default(cuid())
-  userId     String
-  questionId String
-  isCorrect  Boolean
-  user       User     @relation(fields: [userId], references: [id])
-  question   Question @relation(fields: [questionId], references: [id])
-  createdAt  DateTime @default(now())
+  id              String        @id @default(cuid())
+  userId          String
+  questionId      String
+  attempts        Int           @default(0)
+  correctAttempts Int           @default(0)
+  lastCorrect     Boolean?
+  lastShownAt     DateTime      @default(now()) @map("last_shown_at")
+  submittedAt     DateTime?
+  attemptsHistory UserAttempt[]
+  isCorrect       Boolean
+  user            User          @relation(fields: [userId], references: [id])
+  question        Question      @relation(fields: [questionId], references: [id])
+  createdAt       DateTime      @default(now())
+  @@unique([userId, questionId])
+  @@index([userId, questionId])
+  @@index([lastShownAt])
+}
+
+model UserAttempt {
+  id             String   @id @default(cuid())
+  userId         String
+  questionId     String
+  selectedOption String // e.g., "B" or full answer text, or option index
+  isCorrect      Boolean
+  attemptedAt    DateTime @default(now())
+
+  submission Submission @relation(fields: [userId, questionId], references: [userId, questionId], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id])
+
+  
 }
 
 model Like {
@@ -97,6 +142,18 @@ model Like {
   createdAt  DateTime @default(now())
 
   @@unique([userId, questionId])
+  @@index([userId, questionId])
+}
+
+// Depricate in next version
+model View {
+  id         String   @id @default(cuid())
+  userId     String
+  questionId String
+  user       User     @relation(fields: [userId], references: [id])
+  question   Question @relation(fields: [questionId], references: [id])
+  createdAt  DateTime @default(now())
+  @@index([questionId])
 }
 
 model Comment {
@@ -107,6 +164,7 @@ model Comment {
   user       User     @relation(fields: [userId], references: [id])
   question   Question @relation(fields: [questionId], references: [id])
   createdAt  DateTime @default(now())
+  @@index([questionId])
 }
 
 enum Role {

@@ -2,10 +2,30 @@ import { POST } from "@/app/api/submit/route";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 
-jest.mock("@/lib/prisma");
+// Mock next-auth
 jest.mock("next-auth");
 jest.mock("@/lib/auth", () => ({
   authOptions: {},
+}));
+
+// Mock prisma
+jest.mock("@/lib/prisma", () => ({
+  prisma: {
+    question: {
+      findUnique: jest.fn(),
+    },
+    submission: {
+      findUnique: jest.fn(),
+      upsert: jest.fn(),
+    },
+    userAttempt: {
+      create: jest.fn(),
+    },
+    user: {
+      update: jest.fn(),
+    },
+    $transaction: jest.fn((operations) => Promise.all(operations)),
+  },
 }));
 
 describe("Submit API", () => {
@@ -28,23 +48,45 @@ describe("Submit API", () => {
       id: "q1",
       correctOption: 1,
       explanation: "Exp",
+      difficulty: "MEDIUM",
     });
-    (prisma.submission.findFirst as jest.Mock).mockResolvedValue(null); // Not answered correctly before
+    // Mock no existing submission
+    (prisma.submission.findUnique as jest.Mock).mockResolvedValue(null);
+
+    // Mock transaction result
+    // first op is userAttempt.create, second is submission.upsert
+    (prisma.userAttempt.create as jest.Mock).mockResolvedValue({});
+    (prisma.submission.upsert as jest.Mock).mockResolvedValue({
+      attempts: 1,
+      correctAttempts: 1,
+      isCorrect: true,
+    });
 
     const res = await POST(req);
     const data = await res.json();
 
     expect(res.status).toBe(200);
     expect(data.isCorrect).toBe(true);
-    expect(prisma.submission.create).toHaveBeenCalledWith(
+    expect(data.attempts).toBe(1);
+
+    // Check inputs to upsert
+    expect(prisma.submission.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ isCorrect: true }),
+        where: expect.objectContaining({
+          userId_questionId: { userId: "user1", questionId: "q1" },
+        }),
+        create: expect.objectContaining({
+          isCorrect: true,
+          correctAttempts: 1,
+        }),
+        update: expect.objectContaining({ isCorrect: true }),
       }),
     );
+
     expect(prisma.user.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: "user1" },
-        data: { score: { increment: 10 } },
+        data: { score: { increment: 10 } }, // questions mocked as MEDIUM (10 pts)
       }),
     );
   });
@@ -63,17 +105,27 @@ describe("Submit API", () => {
     (prisma.question.findUnique as jest.Mock).mockResolvedValue({
       id: "q1",
       correctOption: 1,
+      difficulty: "MEDIUM",
     });
-    (prisma.submission.findFirst as jest.Mock).mockResolvedValue({
+    // Already answered
+    (prisma.submission.findUnique as jest.Mock).mockResolvedValue({
       id: "sub1",
-    }); // Already answered
+      correctAttempts: 1, // Already has correct attempts
+    });
+
+    (prisma.userAttempt.create as jest.Mock).mockResolvedValue({});
+    (prisma.submission.upsert as jest.Mock).mockResolvedValue({
+      attempts: 2,
+      correctAttempts: 2,
+      isCorrect: true,
+    });
 
     const res = await POST(req);
     const data = await res.json();
 
     expect(res.status).toBe(200);
     expect(data.isCorrect).toBe(true);
-    expect(prisma.submission.create).toHaveBeenCalled();
+    expect(prisma.submission.upsert).toHaveBeenCalled();
     expect(prisma.user.update).not.toHaveBeenCalled();
   });
 
@@ -91,6 +143,16 @@ describe("Submit API", () => {
     (prisma.question.findUnique as jest.Mock).mockResolvedValue({
       id: "q1",
       correctOption: 1,
+      difficulty: "MEDIUM",
+    });
+
+    (prisma.submission.findUnique as jest.Mock).mockResolvedValue(null);
+
+    (prisma.userAttempt.create as jest.Mock).mockResolvedValue({});
+    (prisma.submission.upsert as jest.Mock).mockResolvedValue({
+      attempts: 1,
+      correctAttempts: 0,
+      isCorrect: false,
     });
 
     const res = await POST(req);
@@ -98,9 +160,9 @@ describe("Submit API", () => {
 
     expect(res.status).toBe(200);
     expect(data.isCorrect).toBe(false);
-    expect(prisma.submission.create).toHaveBeenCalledWith(
+    expect(prisma.submission.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ isCorrect: false }),
+        create: expect.objectContaining({ isCorrect: false }),
       }),
     );
     expect(prisma.user.update).not.toHaveBeenCalled();

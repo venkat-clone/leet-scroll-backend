@@ -51,7 +51,7 @@ describe("Questions API", () => {
       expect(prisma.question.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
-            id: { notIn: [] },
+            // id: { notIn: [] },
           },
           take: 10,
           select: {
@@ -95,7 +95,7 @@ describe("Questions API", () => {
           where: {
             category: "Arrays",
             difficulty: "EASY",
-            id: { notIn: [] },
+            // id: { notIn: [] },
           },
           take: 10,
           select: {
