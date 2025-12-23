@@ -107,6 +107,9 @@ export async function GET(request: Request) {
 
       cursorRanking = 0;
       cursorId = null;
+    } else {
+      cursorRanking = 0;
+      cursorId = null;
     }
   }
 
@@ -132,7 +135,9 @@ export async function GET(request: Request) {
     // Generate next cursor from last question
     const nextCursor =
       hasMore && nextQuestions.length > 0
-        ? `${nextQuestions[nextQuestions.length - 1].userRanking}_${nextQuestions[nextQuestions.length - 1].id}`
+        ? `${nextQuestions[nextQuestions.length - 1].userRanking}_${
+            nextQuestions[nextQuestions.length - 1].id
+          }`
         : null;
 
     // Format response
