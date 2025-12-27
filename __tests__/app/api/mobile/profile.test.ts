@@ -15,7 +15,7 @@ describe("GET /api/mobile/profile", () => {
       },
     });
 
-    (getServerSession as jest.Mock).mockResolvedValueOnce({
+    (getServerSession as jest.Mock).mockResolvedValue({
       user: {
         id: "1",
         name: "Test User",
@@ -24,30 +24,35 @@ describe("GET /api/mobile/profile", () => {
         score: 0,
       },
     });
-    (prisma.user.findUnique as jest.Mock).mockResolvedValueOnce({
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
       id: "1",
       name: "Test User",
       email: "test@example.com",
       role: "USER",
       score: 0,
     });
-    (prisma.submission.count as jest.Mock).mockResolvedValueOnce(0);
-    (prisma.submission.groupBy as jest.Mock).mockResolvedValueOnce([]);
-    (prisma.submission.count as jest.Mock).mockResolvedValueOnce(0);
-    (prisma.submission.count as jest.Mock).mockResolvedValueOnce(0);
+    (prisma.submission.count as jest.Mock).mockResolvedValue(0);
+    (prisma.submission.groupBy as jest.Mock).mockResolvedValue([]);
+    (prisma.question.groupBy as jest.Mock).mockResolvedValue([]);
+    (prisma.userPreferences.findUnique as jest.Mock).mockResolvedValue([]);
 
     const res = await GET(req);
     const data = await res.json();
 
     expect(res.status).toBe(200);
+    expect(data).toBeDefined();
     expect(data).toEqual({
       stats: {
         score: 0,
         submissions: 0,
         questionsAttempted: 0,
+        correctAnswersBreakdown: [],
         correctAnswers: 0,
         wrongAnswers: 0,
+        attemptedQuestionsBreakdown: [],
+        wrongAnswersBreakdown: [],
       },
+      preferences: [],
       user: {
         id: "1",
         name: "Test User",
