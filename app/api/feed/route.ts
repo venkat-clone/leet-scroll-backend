@@ -122,7 +122,7 @@ export async function GET(request: Request) {
       userId, // $1: userId
       sevenDaysAgo, // $2: sevenDaysAgo
       cursorRanking, // $3: cursor ranking (null for first page)
-      cursorId, // $4: cursor id (null for first page)
+      "", // $4: cursor id (null for first page)
       limit + 1, // $5: limit (+1 to check if there's more)
     );
 
