@@ -35,6 +35,8 @@ describe("GET /api/mobile/profile", () => {
     (prisma.submission.groupBy as jest.Mock).mockResolvedValue([]);
     (prisma.question.groupBy as jest.Mock).mockResolvedValue([]);
     (prisma.userPreferences.findUnique as jest.Mock).mockResolvedValue([]);
+    (prisma.user.count as jest.Mock).mockResolvedValue(1);
+    (prisma.user.findFirst as jest.Mock).mockResolvedValue(null);
 
     const res = await GET(req);
     const data = await res.json();
@@ -51,6 +53,9 @@ describe("GET /api/mobile/profile", () => {
         wrongAnswers: 0,
         attemptedQuestionsBreakdown: [],
         wrongAnswersBreakdown: [],
+        nextRankedUserPoints: null,
+        noOfUsers: 1,
+        rank: 2,
       },
       preferences: [],
       user: {

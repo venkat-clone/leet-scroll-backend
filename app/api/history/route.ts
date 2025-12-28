@@ -39,7 +39,7 @@ export const GET = authenticated(async (req: NextRequest, userId: string) => {
       attemptsHistory: true,
     },
     orderBy: {
-      submittedAt: "desc",
+      lastShownAt: "desc",
     },
     skip,
     take,

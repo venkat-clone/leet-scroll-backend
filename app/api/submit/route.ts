@@ -3,6 +3,98 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+async function updateUserStreak(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      currentStreak: true,
+      longestStreak: true,
+      lastActivityDate: true,
+    },
+  });
+
+  if (!user) return;
+
+  const { currentStreak, longestStreak, lastActivityDate } = user;
+
+  if (!lastActivityDate) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        currentStreak: 1,
+        longestStreak: 1,
+        lastActivityDate: new Date(),
+      },
+    });
+    return;
+  }
+  const today = new Date();
+  const lastDate = new Date(lastActivityDate);
+  const diffTime = today.getTime() - lastDate.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  let newStreak = currentStreak || 0;
+  let newLongestStreak = longestStreak || 0;
+
+  if (diffDays === 1) {
+    newStreak += 1;
+    if (newStreak > newLongestStreak) {
+      newLongestStreak = newStreak;
+    }
+  } else if (diffDays > 1) {
+    newStreak = 1; // Reset streak
+  }
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      currentStreak: newStreak,
+      longestStreak: newLongestStreak,
+      lastActivityDate: today,
+    },
+  });
+
+  // Get Todays Submission Aggregates
+  const [totalAttempts, totalCorrect, totalSkips] = await prisma.submission
+    .aggregate({
+      where: {
+        userId,
+        submittedAt: { gte: new Date(new Date().toDateString()) },
+      },
+      _sum: {
+        attempts: true,
+        correctAttempts: true,
+        noOfSkips: true,
+      },
+    })
+    .then((res) => [
+      res._sum.attempts || 0,
+      res._sum.correctAttempts || 0,
+      res._sum.noOfSkips || 0,
+    ]);
+
+  await prisma.dailyActivity.upsert({
+    where: {
+      userId_date: {
+        userId,
+        date: new Date(new Date().toDateString()),
+      },
+    },
+    update: {
+      totalAttempts,
+      totalCorrect,
+      totalSkips,
+    },
+    create: {
+      userId,
+      date: new Date(new Date().toDateString()),
+      totalAttempts,
+      totalCorrect,
+      totalSkips,
+    },
+  });
+}
+
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id || req.headers.get("x-user-id");
@@ -123,6 +215,8 @@ export async function POST(req: Request) {
         data: { score: { increment: points } },
       });
     }
+
+    await updateUserStreak(userId as string);
 
     // Return response
     return NextResponse.json({
