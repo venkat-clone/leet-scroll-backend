@@ -3,9 +3,14 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { authenticated } from "@/lib/authenticatedHandler";
+import { p } from "framer-motion/client";
 
 export const GET = authenticated(
   async (request: NextRequest, userId: string) => {
+    const userinfo = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
     try {
       const [
         user,
@@ -17,6 +22,9 @@ export const GET = authenticated(
         wrongAnswersBreakdown,
         attemptedQuestionsBreakdown,
         preferences,
+        userRank,
+        nextRankedUserPoints,
+        noOfUsers,
       ] = await Promise.all([
         prisma.user.findUnique({
           where: { id: userId },
@@ -80,6 +88,31 @@ export const GET = authenticated(
             userId,
           },
         }),
+        prisma.user
+          .count({
+            where: {
+              score: {
+                gt: userinfo?.score || 0,
+              },
+            },
+          })
+          .then((count) => count + 1),
+        prisma.user
+          .findFirst({
+            where: {
+              score: {
+                gt: userinfo?.score || 0,
+              },
+            },
+            orderBy: {
+              score: "asc",
+            },
+            select: {
+              score: true,
+            },
+          })
+          .then((user) => user?.score || null),
+        prisma.user.count(),
       ]);
 
       return NextResponse.json({
@@ -90,6 +123,9 @@ export const GET = authenticated(
           questionsAttempted: questionsAttemptedCount,
           correctAnswers: correctAnswersCount,
           wrongAnswers: wrongAnswersCount,
+          rank: userRank,
+          nextRankedUserPoints,
+          noOfUsers,
           correctAnswersBreakdown,
           wrongAnswersBreakdown,
           attemptedQuestionsBreakdown,
