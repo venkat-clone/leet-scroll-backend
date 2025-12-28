@@ -82,6 +82,9 @@ export async function POST(req: Request) {
           attempts: {
             increment: 1,
           },
+          noOfSkips: {
+            decrement: 1,
+          },
           correctAttempts: isCorrect
             ? {
                 increment: 1,

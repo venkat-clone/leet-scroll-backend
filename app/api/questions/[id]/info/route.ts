@@ -98,6 +98,9 @@ export async function GET(
         },
         update: {
           lastShownAt: new Date(),
+          noOfSkips: {
+            increment: 1,
+          },
         },
         create: {
           userId,

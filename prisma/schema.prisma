@@ -106,6 +106,7 @@ model Submission {
   questionId      String
   attempts        Int           @default(0)
   correctAttempts Int           @default(0)
+  noOfSkips       Int           @default(0)
   lastCorrect     Boolean?
   lastShownAt     DateTime      @default(now()) @map("last_shown_at")
   submittedAt     DateTime?
